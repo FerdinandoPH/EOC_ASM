@@ -5,7 +5,7 @@ function ensambla(){
 		ld -m elf_i386 -s "$1".o -o "$1"
 		;;
 	2)
-		if [ "$2" = "-d" ]
+		if [ "$2" = "-g" ]
 			then
 			echo "Ensamblando en modo debug"
 			as -g "$1".asm -o "$1".o --32
@@ -16,7 +16,7 @@ function ensambla(){
 		fi
 		;;
 	3)
-		if [ "$3" = "-d" ]
+		if [ "$3" = "-g" ]
 			then
 			echo "Ensamblando en modo debug"
 			as -g "$1".asm -o "$2".o --32
