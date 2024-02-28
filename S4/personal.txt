@@ -1,0 +1,9 @@
+Nombre	Edad
+Fernando	18
+Alvaro	16
+Inma	53
+Alberto	53
+QWERTYUIOPASDFGHJKLZ	123
+Pepito	999
+Miguel Angel	18
+Alvaro	18
