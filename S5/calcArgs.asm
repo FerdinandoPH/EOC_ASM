@@ -20,7 +20,6 @@
     .lcomm num2,4
     .lcomm opCode,1
     .lcomm lenEI,4
-    .lcomm basura,1
     .lcomm solucion,4
     .lcomm resto,4
 
@@ -48,6 +47,11 @@ _start:
 
     #operando
     popl %ebx
+    pushl %ebx
+    call obtener_longitud
+    addl $4,%esp
+    cmpl $1,%edx
+    jne errorArg
     movb (%ebx),%al
     movb %al,opCode
     #arg 2
@@ -339,28 +343,6 @@ string_a_int:
     popl %eax
     popl %esi
     ret
-.type purgar_buffer, @function
-purgar_buffer:
-    # movl $4, %eax
-    # movl $1, %ebx
-    #movl $warningBuffer, %ecx
-    # movl $lenWB, %edx
-    # int $0x80
-    pushl %eax
-    pushl %ebx
-    pushl %ecx
-    pushl %edx
-    pushl %esi
-    pushl %ebp
-    movl %esp, %ebp
-    movl $3, %eax
-    movl $0, %ebx
-    movl $basura, %ecx
-    movl $1, %edx
-    int $0x80
-    lea basura,%esi
-    cmpb $10, (%esi)
-    jne purgar_buffer
     movl %ebp, %esp
     popl %ebp
     popl %esi
