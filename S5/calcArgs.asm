@@ -37,19 +37,16 @@ _start:
 
     pushl %ebx
     call obtener_longitud
-    addl $4,%esp
 
     pushl $num1
     pushl %edx
     pushl %ebx
     call string_a_int
-    addl $12,%esp
 
     #operando
     popl %ebx
     pushl %ebx
     call obtener_longitud
-    addl $4,%esp
     cmpl $1,%edx
     jne errorArg
     movb (%ebx),%al
@@ -58,13 +55,11 @@ _start:
     popl %ebx
     pushl %ebx
     call obtener_longitud
-    addl $4,%esp
 
     pushl $num2
     pushl %edx
     pushl %ebx
     call string_a_int
-    addl $12,%esp
     determinar_operacion:
         movl $0,%edi
         movb opCode,%al
@@ -134,7 +129,6 @@ _start:
     imprimir_resultado:
         pushl num1
         call int_a_string
-        addl $4,%esp
         movl $4,%eax
         movl $1,%ebx
         movl $stringResultado,%ecx
@@ -161,7 +155,6 @@ _start:
 
         pushl num2
         call int_a_string
-        addl $4,%esp
         movl $4,%eax
         movl $1,%ebx
         movl $stringResultado,%ecx
@@ -176,7 +169,6 @@ _start:
 
         pushl solucion
         call int_a_string
-        addl $4,%esp
         movl $4,%eax
         movl $1,%ebx
         movl $stringResultado,%ecx
@@ -192,7 +184,6 @@ _start:
             int $0x80
             pushl resto
             call int_a_string
-            addl $4,%esp
             movl $4,%eax
             movl $1,%ebx
             movl $stringResultado,%ecx
@@ -215,14 +206,13 @@ _start:
     int $0x80
 .type int_a_string, @function
 int_a_string:
+            enter $0,$0
             pushl %esi
             pushl %eax
             pushl %ebx
             pushl %ecx
             pushl %edx
             pushl %edi
-            pushl %ebp
-            movl %esp, %ebp
             movl %edi, %esi
             movl $0,lenSR
             movl $stringResultado, %edi
@@ -232,7 +222,7 @@ int_a_string:
             movl %esi,%edi
             movl $stringResultado, %esi
             movl $10, %ecx
-            movl 32(%ebp), %eax
+            movl 8(%ebp), %eax
             obtener_num_cifras:
                 movl $0, %edx
                 cmpl $0, %eax
@@ -245,7 +235,7 @@ int_a_string:
                     cmpl $1000000000,%ecx
                     jge peligro_overflow
                     imull $10, %ecx
-                    movl 32(%ebp), %eax
+                    movl 8(%ebp), %eax
                     jmp obtener_num_cifras
                     peligro_overflow:
                     movl $10, %ecx
@@ -253,7 +243,7 @@ int_a_string:
             fin_obtener_num_cifras:
                 addl $1, lenSR
                 movl lenSR, %ecx
-                movl 32(%ebp), %eax
+                movl 8(%ebp), %eax
                 cmpl $0, %eax
                 jge colocar_cifras
                     movb $45, (%esi)
@@ -267,29 +257,26 @@ int_a_string:
                 addl $48, %edx
                 movb %dl, -1(%esi, %ecx)
                 loop colocar_cifras
-            movl %ebp, %esp
-            popl %ebp
             popl %edi
             popl %edx
             popl %ecx
             popl %ebx
             popl %eax
             popl %esi
-            ret
+            leave
+            ret $4
 .type string_a_int, @function
 string_a_int:
-    
+    enter $0,$0
     pushl %esi
     pushl %eax
     pushl %ebx
     pushl %ecx
     pushl %edx
     pushl %edi
-    pushl %ebp
-    movl %esp, %ebp
 
 
-    movl 36(%ebp),%eax
+    movl 12(%ebp),%eax
     movl %eax,lenEI
 
     xorl %eax,%eax
@@ -297,8 +284,8 @@ string_a_int:
     
     movl $lenEI,%ecx
     movl (%ecx),%ecx
-    movl 32(%ebp), %esi
-    movl 40(%esp), %ebx
+    movl 8(%ebp), %esi
+    movl 16(%ebp), %ebx
     comparar_signo:
         movb (%esi),%al
         cmpb $45,%al
@@ -328,40 +315,30 @@ string_a_int:
         incl %esi
         addl %eax,(%ebx)
         loop proceso_conversion
-    movl 32(%ebp),%eax
+    movl 8(%ebp),%eax
     movb (%eax),%al
     cmpb $45,%al
     jne fin_string_a_int
         negl (%ebx)
     fin_string_a_int:
-    movl %ebp, %esp
-    popl %ebp
     popl %edi
     popl %edx
     popl %ecx
     popl %ebx
     popl %eax
     popl %esi
-    ret
-    movl %ebp, %esp
-    popl %ebp
-    popl %esi
-    popl %edx
-    popl %ecx
-    popl %ebx
-    popl %eax
-    ret
+    leave
+    ret $12
 .type obtener_longitud, @function
 obtener_longitud:
+    enter $0,$0
     pushl %esi
     pushl %eax
     pushl %ebx
     pushl %ecx
     pushl %edi
-    pushl %ebp
-    movl %esp, %ebp
 
-    movl 28(%ebp), %esi
+    movl 8(%ebp), %esi
     movl $0, %edx
     longitud:
         movb (%esi), %al
@@ -371,14 +348,13 @@ obtener_longitud:
         incl %esi
         jmp longitud
     fin_longitud:
-    movl %ebp, %esp
-    popl %ebp
     popl %edi
     popl %ecx
     popl %ebx
     popl %eax
     popl %esi
-    ret
+    leave
+    ret $4
 errorArg:
     movl $4, %eax
     movl $1, %ebx
