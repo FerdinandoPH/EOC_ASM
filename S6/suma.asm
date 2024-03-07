@@ -97,8 +97,7 @@ movl %ebp, %esp # soslayo variables locales (aunque no hay)
 popl %ebp # recupero el marco de pila del llamador
 ret # devuelvo el control al llamador
 int_a_string:
-            pushl %ebp
-            movl %esp, %ebp
+            enter $0,$0
             pushl %esi
             pushl %eax
             pushl %ebx
@@ -155,6 +154,5 @@ int_a_string:
             popl %ebx
             popl %eax
             popl %esi
-            movl %ebp, %esp
-            popl %ebp
-            ret
+            leave
+            ret $4
