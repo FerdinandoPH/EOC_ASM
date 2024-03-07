@@ -4,8 +4,8 @@
     saltoLinea: .ascii "\n"
     esPositivo: .string " (positivo)"
     esNegativo: .string " (negativo)"
-    lenPN = 12
-    msgError: .string "Error: desbordamiento\n"
+    lenPN = . - esNegativo
+    msgError: .string "Error: desbordamiento (o tu respuesta es -1 no sé)\n"
     lenMsgError = . - msgError
 .section .bss
     .lcomm stringResultado, 11
@@ -18,7 +18,7 @@ _start:
 pushl %eax # salvo %eax puesto que se va a devolver un valor en ´el
 
 pushl $32 # 2º argumento (tamaño 4 bytes)
-pushl $-33 # 1er argumento (tamaño 4 bytes)
+pushl $44 # 1er argumento (tamaño 4 bytes)
 
 call suma # llamo a la subrutina suma
 movl %eax, %ebx # salvo el valor devuelto en %ebx
