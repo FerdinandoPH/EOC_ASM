@@ -1,5 +1,5 @@
 .section .data
-    numPrueba: .string "2147483648"
+    numPrueba: .string "3147483648"
 .section .text
 .global _start
 _start:
@@ -15,11 +15,12 @@ strtoul:
     enter $0,$0
     pushl %ebx
     pushl %ecx
-    pushl %edx
+    #pushl %edx
     pushl %esi
     pushl %edi
     movl 8(%ebp), %esi
     movl $0,%ecx
+    movl $1, %edi
     obtener_longitud_local:
         movb (%esi,%ecx,1), %al
         cmpb $0,%al
@@ -27,39 +28,44 @@ strtoul:
         incl %ecx
         jmp obtener_longitud_local
     fin_obtener_longitud_local:
+    cmpb $'-',(%esi)
+    jne no_es_negativo
+        movl $-1,%edi
+        incl %esi
+        decl %ecx
     movl $0,%eax
     movl $0,%ebx
     movb $10,%bl
     bucle_colocar_cifras:
         movl $0,%edx
         movb (%esi),%dl
-        cmpb $48,%dl
+        cmpb $'0',%dl
         jl error_argumento
-        addl $48,%ebx
+        addl $'0',%ebx
         cmpb %bl,%dl
         jg error_argumento
-        subb $48,%dl
-        subb $48,%bl
+        subb $'0',%dl
+        subb $'0',%bl
         addl %edx,%eax
         jo error_argumento
-        jc error_argumento
+        #jc error_argumento
         decl %ecx
-        cmpl $0,%ecx
-        jle fin_colocar_cifras
+        jz fin_colocar_cifras
         mull %ebx
         jo error_argumento
-        jc error_argumento
+        #jc error_argumento
         incl %esi
         jmp bucle_colocar_cifras
     fin_colocar_cifras:
+    imull %edi,%eax
     popl %edi
     popl %esi
-    popl %edx
+    #popl %edx
     popl %ecx
     popl %ebx
     leave
     ret $4
     error_argumento:
-        movl $-1,%eax
+        movl $-1,%edx
         jmp fin_colocar_cifras
 
