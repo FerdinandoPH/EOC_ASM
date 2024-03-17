@@ -2,13 +2,14 @@
     saltoLinea: .asciz "\n"
 .bss
     .globl stringResultado
-    .lcomm stringResultado,12
+    .lcomm stringResultado,33
     .globl lenSR
     .lcomm lenSR,4
 .text
     .globl _start
     _start:
-        pushl $-123456789
+        pushl $10
+        pushl $-2147483647
         call inttostr
 
         movl $4, %eax
@@ -38,12 +39,12 @@ inttostr:
 
     movl $0, lenSR
     xorl %eax, %eax
-    movl $12, %ecx
+    movl $32, %ecx
     movl $stringResultado, %edi
     rep stosb
 
     movl 8(%ebp),%eax
-    movl $10, %ecx
+    movl 12(%ebp), %ecx
     obtener_num_cifras:
         xorl %edx, %edx
         testl %eax, %eax
@@ -53,19 +54,19 @@ inttostr:
         testl %eax, %eax
         jz fin_obtener_num_cifras
             addl $1, lenSR
-            imull $10, %ecx
+            imull 12(%ebp), %ecx
             jo arreglar_desbordamiento
             movl 8(%ebp), %eax
             jmp obtener_num_cifras
             arreglar_desbordamiento:
-                movl $10, %ecx
+                movl 12(%ebp), %ecx
                 jmp obtener_num_cifras
     fin_obtener_num_cifras:
         addl $1, lenSR
         movl $stringResultado, %esi
         movl lenSR, %ecx
 
-        movl $10, %ebx
+        movl 12(%ebp), %ebx
         movl $0,%edx
 
         movl 8(%ebp), %eax
