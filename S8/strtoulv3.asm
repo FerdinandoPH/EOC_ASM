@@ -21,11 +21,11 @@ strtoul_baseString:
     pushl %edi
 
     pushl $10
-    pushl $stringBase
+    pushl 12(%ebp)
     call strtoul
 
     pushl %eax
-    pushl $numPrueba
+    pushl 8(%ebp)
     call strtoul
 
     popl %edi 
