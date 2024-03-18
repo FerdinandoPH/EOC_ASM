@@ -4,14 +4,14 @@
     lenME = . - msgError
 .bss
     .globl stringResultado
-    .lcomm stringResultado,33
+    .lcomm stringResultado,34
     .globl lenSR
     .lcomm lenSR,4
 .text
     .globl _start
     _start:
-        pushl $16
-        pushl $-2147483647
+        pushl $10
+        pushl $-2147483648
         call inttostr
 
         movl $4, %eax
