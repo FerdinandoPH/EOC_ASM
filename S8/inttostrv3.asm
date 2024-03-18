@@ -92,7 +92,7 @@ inttostr:
     popl %ebx
     popl %eax
     leave
-    ret $4
+    ret $8
     error_arg_inttostr:
         movl $4, %eax
         movl $1, %ebx

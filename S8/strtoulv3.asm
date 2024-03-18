@@ -59,7 +59,7 @@ strtoul:
     popl %ecx
     popl %ebx
     leave
-    ret $4
+    ret $8
     error_argumento:
         movl $-1,%edx
         movl $-1,%eax

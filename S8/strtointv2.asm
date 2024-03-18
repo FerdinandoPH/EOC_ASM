@@ -66,7 +66,7 @@ strtoul:
     popl %ecx
     popl %ebx
     leave
-    ret $4
+    ret $8
     error_argumento:
         movl $-1,%edx
         jmp fin_colocar_cifras
