@@ -1,6 +1,6 @@
 .data
     saltoLinea: .ascii "\n"
-    msgError: .string "Error: Base inválida (solo se permite de 2 a 10)\n"
+    msgError: .string "Error: Base inválida (solo se permite de 2 a 16)\n"
     lenME = . - msgError
 .bss
     .globl stringResultado
