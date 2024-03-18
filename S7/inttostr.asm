@@ -53,13 +53,7 @@ inttostr:
         testl %eax, %eax
         jz fin_obtener_num_cifras
             addl $1, lenSR
-            imull $10, %ecx
-            jo arreglar_desbordamiento
-            movl 8(%ebp), %eax
             jmp obtener_num_cifras
-            arreglar_desbordamiento:
-                movl $10, %ecx
-                jmp obtener_num_cifras
     fin_obtener_num_cifras:
         addl $1, lenSR
         movl $stringResultado, %esi

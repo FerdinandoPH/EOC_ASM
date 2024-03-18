@@ -1,5 +1,7 @@
 .data
-    saltoLinea: .asciz "\n"
+    saltoLinea: .ascii "\n"
+    msgError: .string "Error: Base inválida (solo se permite de 2 a 10)\n"
+    lenME = . - msgError
 .bss
     .globl stringResultado
     .lcomm stringResultado,33
@@ -8,7 +10,7 @@
 .text
     .globl _start
     _start:
-        pushl $10
+        pushl $16
         pushl $-2147483647
         call inttostr
 
@@ -36,7 +38,10 @@ inttostr:
     pushl %edx
     pushl %esi
     pushl %edi
-
+    cmpl $16,12(%ebp)
+    jg error_arg_inttostr
+    cmpl $1,12(%ebp)
+    jle error_arg_inttostr
     movl $0, lenSR
     xorl %eax, %eax
     movl $32, %ecx
@@ -54,13 +59,7 @@ inttostr:
         testl %eax, %eax
         jz fin_obtener_num_cifras
             addl $1, lenSR
-            imull 12(%ebp), %ecx
-            jo arreglar_desbordamiento
-            movl 8(%ebp), %eax
             jmp obtener_num_cifras
-            arreglar_desbordamiento:
-                movl 12(%ebp), %ecx
-                jmp obtener_num_cifras
     fin_obtener_num_cifras:
         addl $1, lenSR
         movl $stringResultado, %esi
@@ -79,6 +78,10 @@ inttostr:
     colocar_cifras:
         divl %ebx
         addl $'0', %edx
+        cmpl $'9', %edx
+        jle esta_en_base_10
+            addl $7, %edx
+        esta_en_base_10:
         movb %dl, -1(%esi,%ecx,1)
         xorl %edx, %edx
         loop colocar_cifras
@@ -90,3 +93,12 @@ inttostr:
     popl %eax
     leave
     ret $4
+    error_arg_inttostr:
+        movl $4, %eax
+        movl $1, %ebx
+        movl $msgError, %ecx
+        movl $lenME, %edx
+        int $0x80
+        movl $1, %eax
+        movl $1, %ebx
+        int $0x80
