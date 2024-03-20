@@ -42,15 +42,15 @@ strtoul:
         subb $'0',%bl
         addl %edx,%eax
         jo error_argumento
-        #jc error_argumento
         decl %ecx
         jz fin_colocar_cifras
         mull %ebx
         jo error_argumento
-        #jc error_argumento
         incl %esi
         jmp bucle_colocar_cifras
     fin_colocar_cifras:
+    movl $0,%edx
+    fin_indiferente_de_error:
     popl %edi
     popl %esi
     #popl %edx
@@ -59,6 +59,7 @@ strtoul:
     leave
     ret $4
     error_argumento:
-        movl $-1,%edx
-        jmp fin_colocar_cifras
+        movl $-1,%eax
+        movl $1,%ebx
+        jmp fin_indiferente_de_error
 
