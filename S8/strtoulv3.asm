@@ -73,7 +73,7 @@ strtoul:
             cmpb $'9',%dl
             jle fin_reajuste_comparacion_mas_de_base_10
             cmpb $'A',%dl
-            jl error_arg_strtoint
+            jl error_arg_strtoul
         fin_reajuste_comparacion_mas_de_base_10:
         cmpb %bl,%dl
         jg error_arg_strtoul
