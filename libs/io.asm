@@ -35,6 +35,7 @@
     #     int $0x80
 .globl inttostr_baseString_wrapper
 .type inttostr_baseString_wrapper, @function
+inttostr_baseString_wrapper:
     enter $0,$0
     pushl %eax
     pushl %ebx
@@ -67,6 +68,7 @@
     ret $8
 .globl inttostr_baseString
 .type inttostr_baseString, @function
+inttostr_baseString:
     enter $0,$0
     pushl %eax
     pushl %ebx
@@ -93,6 +95,7 @@
     ret $8
 .globl inttostr_wrapper
 .type inttostr_wrapper, @function
+inttostr_wrapper:
     enter $0,$0
     pushl %eax
     pushl %ebx

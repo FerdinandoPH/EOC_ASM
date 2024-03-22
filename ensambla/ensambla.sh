@@ -121,6 +121,15 @@ function ensambla(){
     if [ ${#librerias[@]} -gt 0 ]; then
         indice=0
         for libreria in "${librerias[@]}"; do
+            if [ ! -f "$libreria" ]; then
+                if [ -f "/mnt/hgfs/EOC/LAB/libs/$libreria" ] || [ -f "/mnt/hgfs/EOC/LAB/libs/$libreria.asm" ]; then
+                    librerias[indice]="/mnt/hgfs/EOC/LAB/libs/$libreria"
+                    libreria="/mnt/hgfs/EOC/LAB/libs/$libreria"
+                else
+                    echo "No encuentro la librería $libreria"
+                    return 1
+                fi
+            fi
             if [ "${libreria##*.}" != "a" ] && [ "${libreria##*.}" != "so" ] && [ "${libreria##*.}" != "o" ]; then
                 if [ "${libreria%.*}" == "$libreria" ]; then
                     libreria="$libreria.asm"
@@ -148,10 +157,10 @@ function ensambla(){
     fi
     if [ $es_debug = true ]; then
         IFS=" "
-        ld -m elf_i386 "${librerias[@]}" "$nombre_output.o" -o "$nombre_output"
+        ld -m elf_i386  "$nombre_output.o" "${librerias[@]}" -o "$nombre_output"
     else
         IFS=" "
-        ld -m elf_i386 -s -o "$nombre_output" "${librerias[@]}" "$nombre_output.o"
+        ld -m elf_i386 -s "$nombre_output.o" "${librerias[@]}" -o "$nombre_output"
     fi
     return 0
 }
