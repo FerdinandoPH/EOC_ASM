@@ -14,15 +14,11 @@
     #La función debe funcionar independientemente del orden en el que se pasen los argumentos (excepto por que la salida debe estar inmediatamente después de -o, y las librerías inmediatamente después de -l). Si alguno de los argumentos no es válido, se debe mostrar un mensaje de error y salir del script
 
     #El funcionamiento del programa es el siguiente: el programa debe llamar a as y ld siguiendo el procedimiento indicado de los argumentos. as siempre llevará la flag --32, y ld siempre llevará la flag -m elf_i386. Si se ha pasado la flag -g, as llevará la flag -g. Si se han pasado librerías, ld las añadirá. Si no se ha pasado la flag -g, ld llevará la flag -s
-
-#COPIAR A PARTIR DE AQUÍ
-
 function errorArgumentos(){
     echo "Error en los argumentos"
     echo "Uso correcto: ensambla <nombre_del_archivo> <nombre_del_ejecutable (opcional)> <-g opcional para gdb> <-l librerías separadas por comas> <-d opcional para librerías dinámicas>, se asume extensión .asm si no se especifica"
 }
-export -f errorArgumentos
-function ensambla(){
+#function ensambla(){
     es_debug=false
     librerias=()
     leyendo_librerias=false
@@ -43,7 +39,7 @@ function ensambla(){
                     echo "Ensamblando en modo debug"
                 else
                     errorArgumentos
-                    return 1
+                    exit 1
                 fi
                 ;;
             -l)
@@ -51,7 +47,7 @@ function ensambla(){
                     echo "$leyendo_librerias y $leyendo_output y $librerias_leidas"
 
                     errorArgumentos
-                    return 1
+                    exit 1
                 else
                     leyendo_librerias=true
                 fi
@@ -62,13 +58,13 @@ function ensambla(){
                     echo "Se generarán librerías dinámicas"
                 else
                     errorArgumentos
-                    return 1
+                    exit 1
                 fi
                 ;;
             -o)
                 if [ $leyendo_output = true ] || [ $leyendo_librerias = true ] || [ $output_leido = true ]; then
                     errorArgumentos
-                    return 1
+                    exit 1
                 else
                     leyendo_output=true
                 fi
@@ -78,7 +74,7 @@ function ensambla(){
             #         es_explicito=true
             #     else
             #         errorArgumentos
-            #         return 1
+            #         exit 1
             #     fi
             #     ;;
             *)
@@ -96,7 +92,7 @@ function ensambla(){
                         fuente_leida=true
                     else
                         errorArgumentos
-                        return 1
+                        exit 1
                     fi
                 fi
                 ;;
@@ -105,7 +101,7 @@ function ensambla(){
     done
     if [ $fuente_leida = false ]; then
         errorArgumentos
-        return 1
+        exit 1
     fi
     if [ $output_leido = false ]; then
         nombre_output="${nombre_fuente%.*}"
@@ -145,14 +141,21 @@ function ensambla(){
             fi
             ((indice++))
         done
-    fi
-    if [ $es_debug = true ]; then
-        IFS=" "
-        ld -m elf_i386 "${librerias[@]}" "$nombre_output.o" -o "$nombre_output"
+        if [ $es_debug = true ]; then
+            IFS=" "
+            ld -m elf_i386 "${librerias[@]}" "$nombre_output.o" -o "$nombre_output"
+        else
+            IFS=" "
+            ld -m elf_i386 -s -o "$nombre_output" "${librerias[@]}" "$nombre_output.o"
+        fi
     else
-        IFS=" "
-        ld -m elf_i386 -s -o "$nombre_output" "${librerias[@]}" "$nombre_output.o"
+        if [ $es_debug = true ]; then
+            ld -m elf_i386 -o "$nombre_output" "$nombre_output.o"
+        else
+            ld -m elf_i386 -s -o "$nombre_output" "$nombre_output.o"
+        fi
     fi
-    return 0
-}
-export -f ensambla
+#}
+#export -f errorArgumentos
+#export -f ensambla
+

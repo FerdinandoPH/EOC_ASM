@@ -1,6 +1,6 @@
 .data
     saltoLinea: .ascii "\n"
-    msgError: .string "Error: Base inválida (solo se permite de 2 a 16)\n"
+    msgError: .string "Error al convertir de entero a cadena\n"
     lenME = . - msgError
 .bss
     .globl stringResultado
@@ -8,27 +8,119 @@
     .globl lenSR
     .lcomm lenSR,4
 .text
-    .globl _start
-    _start:
-        pushl $10
-        pushl $-2147483648
-        call inttostr
+    # .globl _start
+    # _start:
+    #     pushl $10
+    #     pushl $-2147483648
+    #     call inttostr
 
+    #     movl $4, %eax
+    #     movl $1, %ebx
+    #     movl $stringResultado, %ecx
+    #     movl lenSR, %edx
+    #     int $0x80
+
+    #     movl $4, %eax
+    #     movl $1, %ebx
+    #     movl $saltoLinea, %ecx
+    #     movl $1, %edx
+    #     int $0x80
+
+    #     movl $1, %eax
+    #     movl $0, %ebx
+    #     int $0x80
+.globl inttostr_baseString_wrapper
+.type inttostr_baseString_wrapper, @function
+    enter $0,$0
+    pushl %eax
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
+    pushl 12(%ebp)
+    pushl 8(%ebp)
+    call inttostr_baseString
+    cmpl $0,lenSR
+    jg finalizar_inttostr_baseString_wrapper
         movl $4, %eax
         movl $1, %ebx
-        movl $stringResultado, %ecx
-        movl lenSR, %edx
-        int $0x80
-
-        movl $4, %eax
-        movl $1, %ebx
-        movl $saltoLinea, %ecx
-        movl $1, %edx
+        movl $msgError, %ecx
+        movl $lenME, %edx
         int $0x80
 
         movl $1, %eax
-        movl $0, %ebx
+        movl $1, %ebx
         int $0x80
+    finalizar_inttostr_baseString_wrapper:
+    popl %edi
+    popl %esi
+    popl %edx
+    popl %ecx
+    popl %ebx
+    popl %eax
+    leave
+    ret $8
+.globl inttostr_baseString
+.type inttostr_baseString, @function
+inttostr_baseString:
+    enter $0,$0
+    pushl %eax
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
+
+    pushl $10
+    pushl 12(%ebp)
+    call strtoint
+
+    pushl %eax
+    pushl 8(%ebp)
+    call inttostr
+
+    popl %edi
+    popl %esi
+    popl %edx
+    popl %ecx
+    popl %ebx
+    popl %eax
+    leave
+    ret $8
+.globl inttostr_wrapper
+.type inttostr_wrapper, @function
+    enter $0,$0
+    pushl %eax
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl %esi
+    pushl %edi
+    pushl 12(%ebp)
+    pushl 8(%ebp)
+    call inttostr
+    cmpl $0,lenSR
+    jg finalizar_inttostr_wrapper
+        movl $4, %eax
+        movl $1, %ebx
+        movl $msgError, %ecx
+        movl $lenME, %edx
+        int $0x80
+
+        movl $1, %eax
+        movl $1, %ebx
+        int $0x80
+    finalizar_inttostr_wrapper:
+    popl %edi
+    popl %esi
+    popl %edx
+    popl %ecx
+    popl %ebx
+    popl %eax
+    leave
+    ret $8
+.globl inttostr
 .type inttostr, @function
 inttostr:
     enter $0,$0
@@ -85,6 +177,7 @@ inttostr:
         movb %dl, -1(%esi,%ecx,1)
         xorl %edx, %edx
         loop colocar_cifras
+    finalizar_inttostr:
     popl %edi
     popl %esi
     popl %edx
@@ -94,11 +187,17 @@ inttostr:
     leave
     ret $8
     error_arg_inttostr:
-        movl $4, %eax
-        movl $1, %ebx
-        movl $msgError, %ecx
-        movl $lenME, %edx
-        int $0x80
-        movl $1, %eax
-        movl $1, %ebx
-        int $0x80
+        # movl $4, %eax
+        # movl $1, %ebx
+        # movl $msgError, %ecx
+        # movl $lenME, %edx
+        # int $0x80
+        # movl $1, %eax
+        # movl $1, %ebx
+        # int $0x80
+        movl $0, lenSR
+        xorl %eax, %eax
+        movl $32, %ecx
+        movl $stringResultado, %edi
+        rep stosb
+        jmp finalizar_inttostr
