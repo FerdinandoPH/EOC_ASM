@@ -1,11 +1,136 @@
 .data
-
+testString: .string "Fernando"
+saltoLinea: .ascii "\n"
+mensajeEntrada: .string "Introduce una cadena (max 20 caracteres) y te doy la longitud: "
+lenMenEntrada = . - mensajeEntrada
+cadena1: .string "Copiame guapi :)"
+cadcat1: .string "Hola"
+cadcat2: .string " Mundo"
+cadenaBusca: .string "Murcielago"
+msgBusca1: .string "La letra "
+lenMB1 = . - msgBusca1
+msgBusca2: .string " se encuentra en la posicion "
+lenMB2 = . - msgBusca2
+letraBuscada: .byte 'o'
+mensajeLongitud: .string "La longitud de la cadena es: "
+lenMenLongitud = . - mensajeLongitud
+.bss
+    .lcomm entrada,21
+    .lcomm cadena2, 17
+    .lcomm todoJunto, 11
 .text
 
 
 .globl _start
 
 _start:
+
+    movl $4, %eax
+    movl $1, %ebx
+    movl $mensajeEntrada, %ecx
+    movl $lenMenEntrada, %edx
+    int $0x80
+
+    movl $3, %eax
+    movl $0, %ebx
+    movl $entrada, %ecx
+    movl $20, %edx
+    int $0x80
+
+    pushl $0
+    pushl $entrada
+    call limpiar_entrada
+    
+    pushl $entrada
+    call strlen
+    pushl $10
+    pushl %eax
+    call inttostr
+    movl $4, %eax
+    movl $1, %ebx
+    movl $mensajeLongitud, %ecx
+    movl $lenMenLongitud, %edx
+    int $0x80
+    movl $4, %eax
+    movl $1, %ebx
+    movl $stringResultado, %ecx
+    movl $lenSR, %edx
+    int $0x80
+    movl $4, %eax
+    movl $1, %ebx
+    movl $saltoLinea, %ecx
+    movl $1, %edx
+    int $0x80
+
+    pushl $cadena1
+    pushl $cadena2
+    
+    call strcpy
+
+    movl $4, %eax
+    movl $1, %ebx
+    movl $cadena2, %ecx
+    movl $17, %edx
+    int $0x80
+
+    movl $4, %eax
+    movl $1, %ebx
+    movl $saltoLinea, %ecx
+    movl $1, %edx
+    int $0x80
+
+    
+    pushl $cadcat1
+    pushl $todoJunto
+    call strcpy
+
+    pushl $cadcat2
+    pushl $todoJunto
+    call strcat
+
+    movl $4, %eax
+    movl $1, %ebx
+    movl $todoJunto, %ecx
+    movl $11, %edx
+    int $0x80
+
+    movl $4, %eax
+    movl $1, %ebx
+    movl $saltoLinea, %ecx
+    movl $1, %edx
+    int $0x80
+
+    pushl letraBuscada
+    pushl $cadenaBusca
+    call charIndex
+    pushl $10
+    pushl %eax
+    call inttostr
+    movl $4, %eax
+    movl $1, %ebx
+    movl $msgBusca1, %ecx
+    movl $lenMB1, %edx
+    int $0x80
+    movl $4, %eax
+    movl $1, %ebx
+    movl $letraBuscada, %ecx
+    movl $1, %edx
+    int $0x80
+    movl $4, %eax
+    movl $1, %ebx
+    movl $msgBusca2, %ecx
+    movl $lenMB2, %edx
+    int $0x80
+    movl $4, %eax
+    movl $1, %ebx
+    movl $stringResultado, %ecx
+    movl $lenSR, %edx
+    int $0x80
+    movl $4, %eax
+    movl $1, %ebx
+    movl $saltoLinea, %ecx
+    movl $1, %edx
+    int $0x80
     movl $1, %eax
     movl $0, %ebx
     int $0x80
@@ -40,6 +165,7 @@ limpiar_cadena:
         pushl %edi
         call strlen
         movl %eax, %ecx
+    ya_tenemos_longitud:
     xorl %eax, %eax
     rep stosb
     movl 8(%ebp), %eax
@@ -73,11 +199,11 @@ limpiar_entrada:
     quitar_salto_linea:
         decl %eax
         js fin_limpieza
-        cmpb $'\n', (%edi,%eax,1)
+        cmpb $'\n', (%esi,%eax,1)
         jne quitar_salto_linea
         cmpl $'\n', 12(%ebp)
         je fin_limpieza
-        movb $0, (%edi,%eax,1)
+        movb $0, (%esi,%eax,1)
     fin_limpieza:
     movl 8(%ebp), %eax
     popl %edi
@@ -214,15 +340,16 @@ strchr:
     pushl %esi
     pushl %edi
     pushl %ecx
-
-    movl 12(%ebp), %esi
-    movl 8(%ebp), %edi
+    pushl %edx
+    xorl %edx, %edx
+    movl 8(%ebp), %esi
+    movl 12(%ebp), %edx
 
     pushl %esi
     call strlen
     movl %eax, %ecx
     bucle_buscar_strchr:
-        cmpb %edi, (%esi)
+        cmpb %dl, (%esi)
         je encontrado_strchr
         incl %esi
         loop bucle_buscar_strchr
@@ -231,9 +358,23 @@ strchr:
     encontrado_strchr:
         movl %esi, %eax
     fin_strchr:
+    popl %edx
     popl %ecx
     popl %edi
     popl %esi
     leave
     ret $8
-
+.globl charIndex
+.type charIndex, @function
+charIndex:
+    enter $0,$0
+    pushl 12(%ebp)
+    pushl 8(%ebp)
+    call strchr
+    subl 8(%ebp), %eax
+    cmpl $-1, %eax
+    jge fin_charIndex
+    movl $-1, %eax
+    fin_charIndex:
+    leave
+    ret $8
