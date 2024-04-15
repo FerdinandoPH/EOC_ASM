@@ -1,3 +1,4 @@
+#Necesario importar también la librería io
 .data
 testString: .string "Fernando"
 saltoLinea: .ascii "\n"
