@@ -14,8 +14,8 @@ lenMB2 = . - msgBusca2
 letraBuscada: .byte 'o'
 mensajeLongitud: .string "La longitud de la cadena es: "
 lenMenLongitud = . - mensajeLongitud
-cadenaComp1: .string "ABC"
-cadenaComp2: .string "AB"
+cadenaComp1: .string "AB"
+cadenaComp2: .string "ABC"
 subCadena: .string "B"
 msgComp: .string "El resultado de la comparación es: "
 lenMsgComp = . - msgComp
@@ -436,8 +436,6 @@ strcmp:
     enter $0,$0
     pushl %esi
     pushl %edi
-    pushl %ebx
-    pushl %edx
 
     movl 8(%ebp), %esi
     movl 12(%ebp), %edi
@@ -451,8 +449,6 @@ strcmp:
         incl %edi
         jmp bucle_comparar_strcmp
     fin_strcmp:
-    popl %edx
-    popl %ebx
     popl %edi
     popl %esi
     leave
