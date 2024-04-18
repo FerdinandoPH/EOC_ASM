@@ -1,4 +1,3 @@
-#Necesario importar también la librería io
 .data
 testString: .string "Fernando"
 saltoLinea: .ascii "\n"
@@ -15,9 +14,9 @@ lenMB2 = . - msgBusca2
 letraBuscada: .byte 'o'
 mensajeLongitud: .string "La longitud de la cadena es: "
 lenMenLongitud = . - mensajeLongitud
-cadenaComp1: .string "ABC"
-cadenaComp2: .string "AB"
-subCadena: .string "B"
+cadenaComp1: .string "Pedritoritrririta"
+cadenaComp2: .string "Pedritoritrririto"
+subCadena: .string "rit"
 msgComp: .string "El resultado de la comparación es: "
 lenMsgComp = . - msgComp
 msgBus: .string "La subcadena se encuentra en la dirección: "
@@ -437,11 +436,10 @@ strcmp:
     enter $0,$0
     pushl %esi
     pushl %edi
-    pushl %ebx
-    pushl %edx
 
     movl 8(%ebp), %esi
     movl 12(%ebp), %edi
+    xorl %eax, %eax
     bucle_comparar_strcmp:
         movb (%esi), %al
         subb (%edi), %al
@@ -452,8 +450,6 @@ strcmp:
         incl %edi
         jmp bucle_comparar_strcmp
     fin_strcmp:
-    popl %edx
-    popl %ebx
     popl %edi
     popl %esi
     leave
@@ -487,7 +483,11 @@ strstr:
         jz no_encontrado_strstr
         cmpb %al, (%edi,%ecx,1)
         je seguir_buscando_strstr
-            xorl %ecx, %ecx
+            testl %ecx, %ecx
+            jz sumar_indice_strstr
+                xorl %ecx, %ecx
+                jmp bucle_buscar_strstr
+            sumar_indice_strstr:
             incl %esi
             jmp bucle_buscar_strstr
         seguir_buscando_strstr:
