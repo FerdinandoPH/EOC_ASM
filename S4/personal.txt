@@ -7,3 +7,7 @@ QWERTYUIOPASDFGHJKLZ	123
 Pepito	999
 Miguel Angel	18
 Alvaro	18
+pepe	13
+
+nene	11
+

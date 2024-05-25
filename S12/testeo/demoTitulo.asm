@@ -1,7 +1,6 @@
 .section .data
     #titulo
         titulo1:  .asciz " ####### #          #          #    ######  ####### ######  ### #     # ####### ####### \n"
-        lenLineaTitulo=.-titulo1
         titulo2:  .asciz " #       #          #         # #   #     # #       #     #  #  ##    #    #    #     # \n"
         titulo3:  .asciz " #       #          #        #   #  #     # #       #     #  #  # #   #    #    #     # \n"
         titulo4:  .asciz " #####   #          #       #     # ######  #####   ######   #  #  #  #    #    #     # \n"
@@ -9,10 +8,10 @@
         titulo6:  .asciz " #       #          #       #     # #     # #       #    #   #  #    ##    #    #     # \n"
         titulo7:  .asciz " ####### #######    ####### #     # ######  ####### #     # ### #     #    #    ####### \n"
         titulo8:  .asciz "                             Por Fernando Perez Holguin                                 \n"
-        lt8=.-titulo8
+        lenLineaTitulo=.-titulo8
         LFtitulo: .asciz "                                                                                        \n"
         LinAbajo: .asciz "                                                                                        \n"
-        continuar:.asciz "                         Pulsa una tecla para continuar                                 \n"
+        continuar:.asciz "                           Pulsa una tecla para continuar                               \n"
         titulo: .long titulo1, titulo2, titulo3, titulo4, titulo5, titulo6, titulo7,titulo8
         lenTitulo: .long 8
         filasCentraTitulo:.long 0
@@ -45,7 +44,7 @@
         lenNoHaySox=.-nohaySox
         noHayAudio: .string "\n\nNo sen han encontrado los archivos de audio.\nColócalos en la carpeta recursos o pon --noaudio al ejecutar el programa\n"
         lenNoHayAudio=.-noHayAudio
-        pantallaPeque: .string "La pantalla es demasiado pequeña para jugar. El mínimo es 90 columnas y 24 filas\n"
+        pantallaPeque: .string "La pantalla es demasiado pequeña para jugar. El mínimo son 88 columnas y 24 filas\n"
         lenPantallaPeque=.-pantallaPeque
         mensajeSinAudio: .string "El programa se ejecutará sin audio\n"
         
@@ -62,16 +61,17 @@
         archivosMusica: .long archivomus1, archivomus2, archivomus3
         lenArchivosMusica: .long 3
     #profe_builtin
-        termiosnew: .space 18
+        termiosnew:.space
         termiosold: .space 18
         saltoLinea: .asciz "\n"
         clear:    .asciz "\033[2J"
+        lenClear=.-clear
         retrocesoLinea: .asciz "\r\033[K"
         subeLinea: .asciz "\033[A"
         bajaLinea: .asciz "\033[B"
         guardarPos: .asciz "\033[s"
         restaurarPos: .asciz "\033[u"
-        lenClear=.-clear
+        
     #tamaño_pantalla
         winsize:.skip 8
         columnas: .long 0
@@ -81,85 +81,87 @@
     .lcomm estado,4
     .lcomm audio,4
 .text
-
-.macro bajar_cursor num
-    pushl %edi
-    movl \num, %edi
-    bucle_bajar_cursor_\@:
-        print_str $bajaLinea
-        decl %edi
-        jnz bucle_bajar_cursor_\@
-    popl %edi
-    .endm
-.macro clr
-    movl $4, %eax
-    movl $1, %ebx
-    movl $clear, %ecx
-    movl $lenClear, %edx
-    int $0x80
-    .endm
-.macro desbloquear_stdin
-    movl $55, %eax               # syscall number for fcntl
-    movl $0, %ebx                # file descriptor (stdin)
-    movl $4, %ecx                # command (set flags)
-    movl $2048, %edx             # flags (O_NONBLOCK)
-    int $0x80                    # realiza la llamada al sistema
-    .endm
-.macro esperar tiempo
-    movl $162,%eax
-    movl \tiempo,%ebx
-    movl $0,%ecx
-    int $0x80
-    .endm
-.macro print_str string
-    pushl \string
-    call strlen
-    movl %eax, %edx
-    movl $4, %eax
-    movl $1, %ebx
-    movl \string, %ecx
-    int $0x80
-    .endm
-.macro parar_musica
-    movl $7, %eax
-    movl musID, %ebx
-    movl $estado, %ecx
-    movl $1, %edx
-    int $0x80
-    testl %eax , %eax
-    jnz fin_parada_musica_\@
-        movl $37, %eax
-        movl musID, %ebx
-        incl %ebx
-        movl $15, %ecx
+#macros
+    .macro bajar_cursor num
+        pushl %edi
+        movl \num, %edi
+        bucle_bajar_cursor_\@:
+            pushl $bajaLinea
+            call print_str
+            decl %edi
+            jnz bucle_bajar_cursor_\@
+        popl %edi
+        .endm
+    .macro clr
+        movl $4, %eax
+        movl $1, %ebx
+        movl $clear, %ecx
+        movl $lenClear, %edx
         int $0x80
-    fin_parada_musica_\@:
-    .endm
-.macro purgar_buffer
-    bucle_purga_buffer_\@:
-    movl $3, %eax
-    movl $0, %ebx
-    leal basura, %ecx
-    movl $1, %edx
-    int $0x80
-    cmpl $-1,%eax
-    jg bucle_purga_buffer_\@
-    .endm
-.macro salir valor
-    movl $1, %eax
-    movl \valor, %ebx
-    int $0x80
-    .endm
+        .endm
+    .macro desbloquear_stdin
+        movl $55, %eax               # syscall number for fcntl
+        movl $0, %ebx                # file descriptor (stdin)
+        movl $4, %ecx                # command (set flags)
+        movl $2048, %edx             # flags (O_NONBLOCK)
+        int $0x80                    # realiza la llamada al sistema
+        .endm
+    .macro esperar tiempo
+        movl $162,%eax
+        movl \tiempo,%ebx
+        movl $0,%ecx
+        int $0x80
+        .endm
+    # .macro print_str string
+    #     pushl \string
+    #     call strlen
+    #     movl %eax, %edx
+    #     movl $4, %eax
+    #     movl $1, %ebx
+    #     movl \string, %ecx
+    #     int $0x80
+    #     .endm
+    .macro parar_musica
+        movl $7, %eax
+        movl musID, %ebx
+        movl $estado, %ecx
+        movl $1, %edx
+        int $0x80
+        testl %eax , %eax
+        jnz fin_parada_musica_\@
+            movl $37, %eax
+            movl musID, %ebx
+            incl %ebx
+            movl $15, %ecx
+            int $0x80
+        fin_parada_musica_\@:
+        .endm
+    .macro purgar_buffer
+        bucle_purga_buffer_\@:
+        movl $3, %eax
+        movl $0, %ebx
+        leal basura, %ecx
+        movl $1, %edx
+        int $0x80
+        cmpl $-1,%eax
+        jg bucle_purga_buffer_\@
+        .endm
+    .macro salir valor
+        movl $1, %eax
+        movl \valor, %ebx
+        int $0x80
+        .endm
 
-.macro subir_cursor num
-    pushl %edi
-    movl \num, %edi
-    bucle_subir_cursor_\@:
-        print_str $subeLinea
-        decl %edi
-        jnz bucle_subir_cursor_\@
-    popl %edi
-    .endm
+    .macro subir_cursor num
+        pushl %edi
+        movl \num, %edi
+        bucle_subir_cursor_\@:
+            pushl $subeLinea
+            call print_str
+            decl %edi
+            jnz bucle_subir_cursor_\@
+        popl %edi
+        .endm
 .global _start
 _start:
     #tamaño_pantalla
@@ -175,14 +177,15 @@ _start:
         movl winsize, %eax
         shrl $16, %eax
         movl %eax, columnas
-        cmpl $90,%eax
+        cmpl $88,%eax
         jl pantalla_insuficiente
         movl filas, %eax
         cmpl $24,%eax
         jl pantalla_insuficiente
         jmp pantalla_suficiente
             pantalla_insuficiente:
-            print_str $pantallaPeque
+            pushl $pantallaPeque
+            call print_str
             salir $1
         pantalla_suficiente:
     #configuracion_terminal
@@ -211,7 +214,8 @@ _start:
                 testl %eax, %eax
                 jnz fin_noaudio
                     movl $-1,audio
-                    print_str $mensajeSinAudio
+                    pushl $mensajeSinAudio
+                    call print_str
                     esperar $delaySinAudio
                     jmp init_audio_exitoso
             fin_noaudio:
@@ -297,11 +301,12 @@ _start:
         init_audio_exitoso:
     #titulo
         #mostrar_titulo
-            purgar_buffer
+            #purgar_buffer
             clr
             pushl $argumentsT1
             call poner_musica
-            print_str $LFtitulo
+            pushl $titulo
+            call print_str
             movl lenTitulo,%ecx
             movl $titulo,%esi
             bucle_lineas_titulo:
@@ -342,7 +347,8 @@ _start:
                 movl %eax, delayLFtitulo+4
                 bucle_centrar_titulo:
                     pushl %ecx
-                    print_str $LFtitulo
+                    pushl $LFtitulo
+                    call print_str
                     esperar $delayLFtitulo
                     popl %ecx
                     loop bucle_centrar_titulo
@@ -362,7 +368,8 @@ _start:
                 esperar $delayIdling
                 testl %edi, %edi
                 jz fin_anim_titulo
-                    print_str $guardarPos
+                    pushl $guardarPos
+                    call print_str
                     movl %esi,%eax
                     xorl %edx,%edx
                     movl intervaloContinuar,%ebx
@@ -372,22 +379,25 @@ _start:
                         movl filasCentraTitulo,%ecx
                         subl $2,%ecx
                         bucle_subir_a_continuar:
-                            pushl %ecx
-                            print_str $subeLinea
-                            popl %ecx
+                            pushl $subeLinea
+                            call print_str
                             loop bucle_subir_a_continuar
-                        print_str $retrocesoLinea
+                        pushl $retrocesoLinea
+                        call print_str
                         movl mostrarContinuar,%eax
                         negl %eax
                         movl %eax,mostrarContinuar
                         testl %eax,%eax
                         jns mostrar_continuar
-                            print_str $saltoLinea
+                            pushl $saltoLinea
+                            call print_str
                             jmp fin_actualizar_continuar
                         mostrar_continuar:
-                            print_str $continuar
+                            pushl $continuar
+                            call print_str
                         fin_actualizar_continuar:
-                        print_str $restaurarPos
+                        pushl $restaurarPos
+                        call print_str
                     #animacion_puntos
                         movl %esi,%eax
                         xorl %edx,%edx
@@ -400,18 +410,21 @@ _start:
                         addl lenTitulo,%ecx
                         incl %ecx
                         subir_cursor %ecx
-                        print_str $retrocesoLinea
+                        pushl $retrocesoLinea
+                        call print_str 
                         movl $lenLineaTitulo,%ecx
                         subl $2,%ecx
                         bucle_linea_arriba:
                             pushl %ecx
                             cmpl $1,%edi
                             jne espacio_LA_puntos
-                                print_str $asterisco
+                                pushl $asterisco
+                                call print_str
                                 #xorl %edi,%edi
                                 jmp fin_caracter_puntos
                             espacio_LA_puntos:
-                                print_str $espacio
+                                pushl $espacio
+                                call print_str
                             fin_caracter_puntos:
                             decl %edi
                             testl %edi,%edi
@@ -420,7 +433,8 @@ _start:
                                 no_max_puntos_LA:
                             popl %ecx
                             loop bucle_linea_arriba
-                        print_str $bajaLinea
+                        pushl $bajaLinea
+                        call print_str
                         movl lenTitulo,%ecx
                         pushl %esi
                         bucle_linea_derecha:
@@ -447,22 +461,24 @@ _start:
                                 no_max_puntos_LD:
                             #debug solo
                                 
-                                movl $4,%eax
-                                movl $1,%ebx
-                                movl $retrocesoLinea,%ecx
-                                movl $5,%edx
-                                int $0x80
-                                subl $lenLineaTitulo,%esi
-                                addl $3,%esi
-                                movl %esi,%ecx
-                                movl $4,%eax
-                                movl $1,%ebx
-                                movl $lenLineaTitulo,%edx
-                                int $0x80
+                                # movl $4,%eax
+                                # movl $1,%ebx
+                                # movl $retrocesoLinea,%ecx
+                                # movl $5,%edx
+                                # int $0x80
+                                # subl $lenLineaTitulo,%esi
+                                # addl $3,%esi
+                                # movl %esi,%ecx
+                                # movl $4,%eax
+                                # movl $1,%ebx
+                                # movl $lenLineaTitulo,%edx
+                                # int $0x80
+                            bajar_cursor $1
                             popl %ecx
                             loop bucle_linea_derecha
                             popl %esi
-                        print_str $retrocesoLinea
+                        pushl $retrocesoLinea
+                        call print_str 
                         movl $lenLineaTitulo,%ecx
                         subl $3,%ecx
                         pushl %esi
@@ -486,7 +502,8 @@ _start:
                             decl %ecx
                             jns bucle_linea_abajo
                         popl %esi
-                        print_str $LFtitulo
+                        pushl $LFtitulo
+                        call print_str
                         subir_cursor $2
 
                         movl lenTitulo,%ecx
@@ -499,13 +516,16 @@ _start:
                             addl %ecx,%esi
                             movl (%esi),%esi
                             incl %esi
-                            print_str $retrocesoLinea
+                            pushl $retrocesoLinea
+                            call print_str 
                             cmpl $1,%edi
                             jne espacio_LI_puntos
-                                print_str $asterisco
+                                pushl $asterisco
+                                call print_str
                                 jmp fin_caracter_puntos_LI
                             espacio_LI_puntos:
-                                print_str $espacio
+                                pushl $espacio
+                                call print_str
                             fin_caracter_puntos_LI:
                             decl %edi
                             testl %edi,%edi
@@ -530,7 +550,8 @@ _start:
                         jne no_max_anim_titulo
                             movl $7,%esi
                             no_max_anim_titulo:
-                    print_str $restaurarPos
+                    pushl $restaurarPos
+                    call print_str
                 fin_anim_titulo:
                 movl $7, %eax
                 movl musID, %ebx
@@ -545,7 +566,7 @@ _start:
                     jmp esperar_tecla
     fin:
         parar_musica
-        purgar_buffer
+        #purgar_buffer
         clr
         movl $4, %eax
         movl $1, %ebx
@@ -596,6 +617,24 @@ _start:
             movl %eax, musID
             xorl %eax, %eax
         fin_poner_musica:
+        popl %edx
+        popl %ecx
+        popl %ebx
+        leave
+        ret $4
+.type print_str,@function
+    print_str:
+        enter $0, $0
+        pushl %ebx
+        pushl %ecx
+        pushl %edx
+        pushl 8(%ebp)
+        call strlen
+        movl %eax, %edx
+        movl $4, %eax
+        movl $1, %ebx
+        movl 8(%ebp), %ecx
+        int $0x80
         popl %edx
         popl %ecx
         popl %ebx

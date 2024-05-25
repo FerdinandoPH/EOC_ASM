@@ -1,7 +1,7 @@
 .data
    key:    .byte 0   # Ultima pulsacion de teclado
    pos:    .byte 2,2 # Fila, Columna actual
-   goal:   .byte 1,8 # Fila, Columna de salida
+   goal:   .byte 1,2 # Fila, Columna de salida
    # Graficos
    wall:   .asciz "#" # Pared
    nowall: .asciz " " # Espacio libre
@@ -19,9 +19,9 @@
    surrend: .asciz "Te has rendido.\n"
    # Datos del mapa
    mapfile: .long 0 # Archivo del mapa
-   size: .long 1,1  # Tamaño del mapa en filas,columnas
-   map: .space 9801
-   mapDefecto: .asciz "111111101101010001101000001101110101100010101101010111100010101100000001111111111"
+   size: .long 5,4  # Tamaño del mapa en filas,columnas
+   mapDefecto: .asciz "10111100011000111111"
+   map: .asciz "10111100011000111111"
    FREE = '0' # Caracter que representa espacio libre
    baseTimer: .long 0,10000000
    deltaTime: .long 0
@@ -185,11 +185,7 @@ _start:
 
 
    cargar_defecto:
-   pushl $mapDefecto
-   pushl $map
-   call strcpy
-   movl $9,size
-   movl $9,(size+4)
+   
    inicio:
    # Recuperar configuracion terminal
    movl $54, %eax
@@ -253,7 +249,7 @@ nextCol:
    # Por defecto espacio libre    
    movl $nowall, %ecx
    movl %edi, %eax
-   mull (size+4)
+   mull (size)
    cmpb $FREE, map(%esi,%eax)
    je displayPos
    movl $wall, %ecx
@@ -266,7 +262,7 @@ nextCol:
    int $0x80
    # Avanzar por array
    incl %esi
-   cmpl (size+4), %esi
+   cmpl (size), %esi
    jne nextCol
    # Mover cursor abajo
    movl $4, %eax
@@ -276,7 +272,7 @@ nextCol:
    int $0x80
    # Mas filas
    incl %edi
-   cmp (size), %edi
+   cmp (size+4), %edi
    jne nextRow
    
    push $mensajePasos
@@ -414,9 +410,7 @@ setCursorPos:
    enter $0, $0
    pushl %ebx
    pushl %ecx
-   pushl %edx
-   pushl %esi
-   # AH=columna, AL=fila
+   # AH=fila, AL=columna
    movw (pos), %ax
    #Comprobar que no se salga
    cmpb (size), %al
@@ -438,7 +432,7 @@ setCursorPos:
    xorl %ebx,%ebx
    movb %al, %bl
    decb %bl
-   imull (size+4),%ebx
+   imull size,%ebx
    xorl %ecx,%ecx
    movb %ah, %cl
    addl %ecx, %ebx
@@ -449,48 +443,15 @@ setCursorPos:
        movl $0, %eax
        jmp fin_scp
    ok_scp:
-   # Convertir a ASCII y actualizar ANSII
-   cmpb $10, %al
-   jl no_decena_fila
-      xorl %edx, %edx
-      movb %al, %dl
-      pushl $10
-      pushl %edx
-      call inttostr
-      lea stringResultado, %esi
-      movb (%esi), %dl
-      movb %dl, (position+2)
-      movb 1(%esi), %dl
-      movb %dl, (position+3)
-      jmp ascii_columna
-   no_decena_fila:
-      orb $0x30, %al
-      movb $'0',(position+2)
-      movb %al, (position+3)
-   ascii_columna:
-   cmpb $10, %ah
-   jl no_decena_columna
-      xorl %edx, %edx
-      movb %ah, %dl
-      pushl $10
-      pushl %edx
-      call inttostr
-      lea stringResultado, %esi
-      movb (%esi), %dl
-      movb %dl, (position+5)
-      movb 1(%esi), %dl
-      movb %dl, (position+6)
-      jmp fin_asciificacion
-   no_decena_columna:
-      orb $0x30, %ah
-      movb $'0',(position+5)
-      movb %ah, (position+6)
-   fin_asciificacion:
+   # Convertir a ASCII
+   orb $0x30, %al
+   orb $0x30, %ah
+   # Actualizar codigo ANSI
+   movb %al, (position+3)
+   movb %ah, (position+6)
    movl $1,%eax
    # TODO VALOR DE RETORNO
    fin_scp:
-   popl %esi
-   popl %edx
    popl %ecx
    popl %ebx
    leave
