@@ -25,7 +25,7 @@
    FREE = '0' # Caracter que representa espacio libre
    baseTimer: .long 0,10000000
    deltaTime: .long 0
-   thresholdMeta: .long 5
+   thresholdMeta: .long 50
    dibujarX: .byte 1
    mensajePasos: .asciz "Pasos dados: "
    pasosDados: .long 0
@@ -59,11 +59,14 @@
 # 4º Columna inicio
 # 5º Fila final
 # 6º Columna final
-_start:
+.global start_laberinto
+start_laberinto:
    # TODO PROCESAR ARGUMENTOS
    popl %ecx
    cmpl $6, %ecx
-   jne cargar_defecto
+   jl cargar_defecto
+   cmpl $7, %ecx
+   jg cargar_defecto
 
    # TODO LEER MAPA DESDE ARCHIVO
    popl %ebx
@@ -231,8 +234,9 @@ mainLoop:
    testl %edx, %edx
    jnz fin_reloj_anim
       movl $0, deltaTime
-   fin_reloj_anim:
       negb dibujarX
+   fin_reloj_anim:
+      
    # Mostrar mapa
    xorl %edi, %edi
 nextRow:
