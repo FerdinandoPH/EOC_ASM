@@ -1,4 +1,8 @@
 .section .data
+    .global numArgs
+    numArgs: .long 0
+    .global primerArg
+    primerArg: .long 0
     #titulo
         titulo1:  .asciz " ####### #          #          #    ######  ####### ######  ### #     # ####### ####### \n"
         titulo2:  .asciz " #       #          #         # #   #     # #       #     #  #  ##    #    #    #     # \n"
@@ -18,6 +22,7 @@
         intervaloContinuar: .long 5
         espaciacionPuntos: .long 4
         mostrarContinuar: .long 1
+
         asterisco: .asciz "*"
         espacio: .asciz " "
     #argumentos_sonido
@@ -205,10 +210,12 @@ _start:
     #comprobar_audio
         #comprobar --noaudio
             popl %ecx
+            movl %ecx, numArgs
             cmpl $2,%ecx
-            jne fin_noaudio
+            jl fin_noaudio
                 popl %ebx
                 popl %ebx
+                
                 pushl %ebx
                 pushl $noaudio
                 call strcmp
@@ -220,6 +227,7 @@ _start:
                     esperar $delaySinAudio
                     jmp init_audio_exitoso
             fin_noaudio:
+                movl %ebx, primerArg    
         #comprobar_sox
             movl $2, %eax
             int $0x80

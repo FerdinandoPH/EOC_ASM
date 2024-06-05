@@ -62,14 +62,17 @@
 .global start_laberinto
 start_laberinto:
    # TODO PROCESAR ARGUMENTOS
-   popl %ecx
+   movl numArgs, %ecx
    cmpl $6, %ecx
    jl cargar_defecto
    cmpl $7, %ecx
    jg cargar_defecto
 
    # TODO LEER MAPA DESDE ARCHIVO
-   popl %ebx
+   cmpl $0,primerArg
+   je comenzar_lectura_args
+   movl primerArg, %ebx
+   comenzar_lectura_args:
    popl %ebx
    movl $5, %eax
    movl $0,%ecx

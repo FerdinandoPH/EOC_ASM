@@ -509,3 +509,24 @@ strstr:
     no_encontrado_strstr:
         movl $0, %eax
         jmp fin_strstr
+.global print_str
+.type print_str, @function
+print_str:
+    enter $0,$0
+    pushl %eax
+    pushl %ebx
+    pushl %ecx
+    pushl %edx
+    pushl 8(%ebp)
+    call strlen
+    movl %eax, %edx
+    movl $4, %eax
+    movl $1, %ebx
+    movl 8(%ebp), %ecx
+    int $0x80
+    popl %edx
+    popl %ecx
+    popl %ebx
+    popl %eax
+    leave
+    ret $4
