@@ -142,7 +142,7 @@ inttostr:
     jle error_arg_inttostr
     movl $0, lenSR
     xorl %eax, %eax
-    movl $32, %ecx
+    movl $34, %ecx
     movl $stringResultado, %edi
     rep stosb
 
@@ -350,24 +350,25 @@ strtoint:
             cmpb $16,%dl
             jle error_arg_strtoint
             cmpb $42,%dl
-            jg quizas_minus
+            jg error_arg_strtoint
+            # jg quizas_minus
                 subb $7,%dl
                 jmp fin_reajuste
-            quizas_minus:
-                cmpb $49,%dl
-                jl error_arg_strtoint
-                subb $39,%dl
+            # quizas_minus:
+            #     cmpb $49,%dl
+            #     jl error_arg_strtoint
+            #     cmpb $'z',%dl
+            #     jg error_arg_strtoint
+            #     subb $39,%dl
         fin_reajuste:
         cmpb %bl,%dl
         jge error_arg_strtoint
         addl %edx,%eax
         jo error_arg_strtoint
-        #jc error_arg_strtoint
         decl %ecx
         jz fin_colocar_cifras
         mull %ebx
         jo error_arg_strtoint
-        #jc error_arg_strtoint
         incl %esi
         jmp bucle_colocar_cifras
     fin_colocar_cifras:
@@ -376,7 +377,6 @@ strtoint:
     fin_colocar_cifras_con_error:
     popl %edi
     popl %esi
-    #popl %edx
     popl %ecx
     popl %ebx
     leave
