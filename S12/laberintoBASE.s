@@ -51,7 +51,6 @@
    movl \num,%ebx
    int $0x80
 .endm
-.global _start
 # ARGUMENTOS:
 # 1º Nombre del programa
 # 2º Archivo de mapa

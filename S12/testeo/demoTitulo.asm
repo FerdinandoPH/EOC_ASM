@@ -22,11 +22,11 @@
         espacio: .asciz " "
     #argumentos_sonido
         command_string: .asciz "/bin/bash"
-        argument0: .asciz "bash"
+        argument0: .asciz "/bin/bash"
         argument1: .asciz "-c"
-        argument2: .asciz "play ./Recursos/t2.wav -q -t alsa > /dev/null 2>&1"
-        argument3: .asciz "play ./Recursos/t1.wav -q -t alsa > /dev/null 2>&1"
-        argument4: .asciz "play ./Recursos/s.wav -q -t alsa > /dev/null 2>&1"
+        argument2: .asciz "play ./Recursos/t2.wav -q > /dev/null 2>&1"
+        argument3: .asciz "play ./Recursos/t1.wav -q > /dev/null 2>&1"
+        argument4: .asciz "play ./Recursos/s.wav -q > /dev/null 2>&1"
         argument5: .asciz "which play > /dev/null 2>&1"
         argumentShh: .asciz "> /dev/null 2>&1"
         argumentsT2: .long argument0, argument1, argument2, 0
@@ -76,6 +76,11 @@
         winsize:.skip 8
         columnas: .long 0
         filas: .long 0
+    
+    #args
+        argc: .long 0
+        argv: .long 0
+        envp: .long 0
 .bss
     .lcomm basura, 4
     .lcomm estado,4
@@ -164,6 +169,17 @@
         .endm
 .global _start
 _start:
+    colecta_args:
+        movl (%esp), %ecx
+        movl %ecx, argc
+        movl %esp, %ebx
+        addl $4, %ebx
+        movl %ebx, argv
+        llegar_a_envp:
+            addl $4, %ebx
+            loop llegar_a_envp
+        addl $4, %ebx
+        movl %ebx, envp
     #tamaño_pantalla
         movl $54, %eax
         movl $0, %ebx
@@ -203,11 +219,10 @@ _start:
         desbloquear_stdin
     #comprobar_audio
         #comprobar --noaudio
-            popl %ecx
-            cmpl $2,%ecx
-            jne fin_noaudio
-                popl %ebx
-                popl %ebx
+            cmpl $2,argc
+            jl fin_noaudio
+                movl argv, %ebx
+                addl $4, %ebx
                 pushl %ebx
                 pushl $noaudio
                 call strcmp
@@ -227,7 +242,7 @@ _start:
                 movl $11, %eax
                 movl $command_string, %ebx
                 movl $argumentsSox, %ecx
-                movl $0, %edx
+                movl envp, %edx
                 int $0x80
             padre_comprobar_sox:
             movl %eax, %ebx
@@ -277,7 +292,7 @@ _start:
                     movl $11, %eax
                     movl $command_string, %ebx
                     movl $argumentsInit, %ecx
-                    movl $0, %edx
+                    movl envp, %edx
                     int $0x80
                 padre_limpieza_sox:
                     movl %eax,musID
@@ -305,8 +320,6 @@ _start:
             clr
             pushl $argumentsT1
             call poner_musica
-            pushl $titulo
-            call print_str
             movl lenTitulo,%ecx
             movl $titulo,%esi
             bucle_lineas_titulo:
@@ -608,7 +621,7 @@ _start:
                 movl $11, %eax
                 movl $command_string, %ebx
                 movl 8(%ebp), %ecx
-                movl $0, %edx
+                movl envp, %edx
                 int $0x80
                 movl $1, %eax
                 movl $0, %ebx
